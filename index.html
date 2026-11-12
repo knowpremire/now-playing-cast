@@ -9,13 +9,13 @@
   /* Now Playing Car - Chromecast screen. The phone sends the song, art and lyrics; this page only draws them. */
   html, body { margin: 0; height: 100%; background: #000; color: #fff; overflow: hidden;
     font-family: "Google Sans", Roboto, "Helvetica Neue", Arial, sans-serif; cursor: none; }
-  #bg { position: fixed; inset: 0; transition: background 1.2s ease; }
-  #bg::after { content: ""; position: absolute; inset: 0;
+  #bg { position: fixed; top: 0; right: 0; bottom: 0; left: 0; transition: background 1.2s ease; }
+  #bg::after { content: ""; position: absolute; top: 0; right: 0; bottom: 0; left: 0;
     background: radial-gradient(120% 90% at 20% 30%, rgba(0,0,0,0) 0%, rgba(0,0,0,.55) 70%, rgba(0,0,0,.8) 100%); }
-  #stage { position: fixed; inset: 0; display: grid; grid-template-columns: 38vw 1fr; gap: 4vw;
+  #stage { position: fixed; top: 0; right: 0; bottom: 0; left: 0; display: grid; grid-template-columns: 38vw 1fr; gap: 4vw;
     padding: 7vh 5vw; box-sizing: border-box; }
   #left { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
-  #art { width: 100%; aspect-ratio: 1; border-radius: 2.2vw; background: #222 center/cover no-repeat;
+  #art { width: 100%; height: 0; padding-top: 100%; border-radius: 2.2vw; background: #222 center/cover no-repeat;
     box-shadow: 0 3vh 8vh rgba(0,0,0,.55); transition: opacity .6s ease; }
   #title { margin-top: 4vh; font-size: 3.4vw; font-weight: 700; line-height: 1.15;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -35,7 +35,7 @@
   .line.past { color: rgba(255,255,255,.45); }
   .gap { font-size: 3.6vw; letter-spacing: .6vw; }
   #plain { font-size: 2.6vw; line-height: 1.5; color: rgba(255,255,255,.85); white-space: pre-wrap; }
-  #msg { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  #msg { position: fixed; top: 0; right: 0; bottom: 0; left: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
     font-size: 2.6vw; color: rgba(255,255,255,.75); transition: opacity .6s ease; }
   #msg small { margin-top: 1.5vh; font-size: 1.5vw; color: rgba(255,255,255,.45); }
   .hidden { opacity: 0; pointer-events: none; }
@@ -160,6 +160,9 @@
   opts.customNamespaces = {};
   opts.customNamespaces[NS] = cast.framework.system.MessageType.JSON;
   ctx.start(opts);
+  // idle timeout is off, so if no phone ever connects (it lost Wi-Fi or was closed while this page was opening),
+  // close after a minute instead of staying on the TV until someone casts something else
+  setTimeout(function () { if (ctx.getSenders().length === 0) ctx.stop(); }, 60000);
 })();
 </script>
 </body>
