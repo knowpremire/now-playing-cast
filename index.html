@@ -40,6 +40,12 @@
     font-size: 2.6vw; color: rgba(255,255,255,.75); transition: opacity .6s ease; }
   #msg small { margin-top: 1.5vh; font-size: 1.5vw; color: rgba(255,255,255,.45); }
   .hidden { opacity: 0; pointer-events: none; }
+  /* no lyrics for this song: the artwork and song take the middle of the screen */
+  #stage.solo { grid-template-columns: 31vw; justify-content: center; }
+  #stage.solo #right { display: none; }
+  #stage.solo #title, #stage.solo #artist { text-align: center; }
+  #stage { transition: opacity .5s ease; }
+  #stage.swap { opacity: 0; }
 </style>
 </head>
 <body>
@@ -61,7 +67,26 @@
   var $ = function (id) { return document.getElementById(id); };
   var st = { title: "", artist: "", playing: false, pos: 0, dur: 0, at: performance.now(), color: 0x202020 };
   var lyr = { key: "", synced: false, lines: [], plain: "" };
-  var cur = -2, plainY = 0;
+  var cur = -2, plainY = 0, solo = false, soloTimer = 0;
+
+  // fade out, switch between the two layouts, fade back in
+  function setSolo(on) {
+    if (on === solo) return;
+    solo = on;
+    var stage = $("stage");
+    clearTimeout(soloTimer);
+    if (stage.classList.contains("solo") === solo) {
+      // changed back before the fade finished: the right layout is still on screen, just fade it back in
+      stage.classList.remove("swap");
+      return;
+    }
+    stage.classList.add("swap");
+    soloTimer = setTimeout(function () {
+      stage.classList.toggle("solo", solo);
+      stage.classList.remove("swap");
+      cur = -2; // the lines were measured while the lyrics column was hidden: highlight and scroll again
+    }, 450);
+  }
 
   function fmt(ms) {
     var s = Math.max(0, Math.floor(ms / 1000));
@@ -113,6 +138,9 @@
     } else {
       var n = document.createElement("div"); n.className = "line status"; n.textContent = m.status || ""; box.appendChild(n);
     }
+    // centre the artwork when the song has no lyrics; an empty status just means the new song's lyrics are on their way
+    if ((lyr.synced && lyr.lines.length) || lyr.plain) setSolo(false);
+    else if (m.status) setSolo(true);
   }
 
   function tick() {
